@@ -1,0 +1,15 @@
+{{>layouts/header}}
+<div class="container mt-4">
+    {{#news}}
+        <div class="blog-post mb-4">
+            <h2 class="blog-post-title">{{title}}</h2>
+            <hr>
+            <p class="blog-post-content">{{content}}</p>
+            <hr>
+        </div>
+    {{/news}}
+    <a href="/news/list" class="btn btn-primary">목록</a>
+    <a href="/news/{{newsId}}/edit" class="btn btn-secondary">수정</a>
+    <a href="/news/{{newsId}}/delete" class="btn btn-danger">삭제</a>
+</div>
+{{>layouts/footer}}
