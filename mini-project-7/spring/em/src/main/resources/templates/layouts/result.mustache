@@ -1,0 +1,166 @@
+{{>layouts/header}}
+<div id="back_ground">
+    <style>
+        /* 테이블 전체 스타일 */
+        table {
+            width: 80%; /* 테이블 너비를 80%로 줄임 */
+            margin: 20px auto; /* 중앙 정렬 */
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            font-size: 12px; /* 폰트 크기 줄임 */
+        }
+
+        th, td {
+            padding: 8px; /* 패딩 줄임 */
+            text-align: left;
+            line-height: 40px;
+        }
+
+        /* 테이블 헤더 스타일 */
+        th {
+            background-color: #007BFF;
+            color: white;
+            text-transform: uppercase;
+            font-size: 12px; /* 폰트 크기 줄임 */
+        }
+
+        /* 테이블 본문 스타일 */
+        td {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+
+        /* 테이블 홀수 행 스타일 */
+        tbody tr:nth-child(odd) td {
+            background-color: #f1f1f1;
+        }
+
+        /* 테이블 호버 효과 */
+        tbody tr:hover td {
+            background-color: #e2f0ff;
+        }
+
+        /* 테이블 제목 스타일 */
+        .blog-post-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center; /* 제목 중앙 정렬 */
+        }
+
+        tr {
+            height: 60px;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #007BFF;
+            margin: 20px 0;
+        }
+
+        .hospital-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .hospital-card h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #4CAF50;
+        }
+        .hospital-card p {
+            margin: 8px 0;
+            color: #555;
+        }
+        .hospital-card .eta {
+            font-weight: bold;
+            color: #007BFF;
+        }
+        .hospital-card .distance {
+            color: #FF5722;
+            font-weight: bold;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-link a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .no-results {
+            font-size: 2em;
+            font-weight: bold;
+            color: #FF5722;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 100px;
+    }
+    </style>
+
+<!--    {{#emergency}}-->
+<!--    <table>-->
+<!--        <thead>-->
+<!--        <tr>-->
+<!--            <th>이름</th>-->
+<!--            <th>주소</th>-->
+<!--            <th>전화번호</th>-->
+<!--            <th>소요시간</th>-->
+<!--            <th>거리</th>-->
+<!--            <th>요금</th>-->
+<!--        </tr>-->
+<!--        </thead>-->
+<!--        <tbody>-->
+<!--        {{#data}}-->
+<!--            <tr>-->
+<!--                <td>{{hospital}}</td>-->
+<!--                <td>{{addr}}</td>-->
+<!--                <td>{{tel}}</td>-->
+<!--                <td>{{eta}}</td>-->
+<!--                <td>{{dist}}</td>-->
+<!--                <td>{{fee}}</td>-->
+<!--            </tr>-->
+<!--        </tbody>-->
+<!--        {{/data}}-->
+<!--    </table>-->
+<!--    {{/emergency}}-->
+<!--    {{^emergency}}-->
+<!--        <div class="no-results">-->
+<!--            가까운 병원을 찾아가는 것을 추천드립니다.-->
+<!--        </div>-->
+<!--    {{/emergency}}-->
+
+    <div class="container">
+        {{#data}}
+            <div class="hospital-card">
+                <h2>{{hospital}}</h2>
+                <p><strong>주소:</strong> {{addr}}</p>
+                <p><strong>전화번호:</strong> {{tel}}</p>
+                <p><span class="eta">예상 도착 시간:</span> {{eta}}</p>
+                <p><span class="distance">거리:</span> {{dist}} km</p>
+                <p><strong>예상 요금:</strong> {{fee}}원</p>
+            </div>
+        {{/data}}
+        {{^data}}
+            <div class="no-results">
+                가까운 병원을 찾아가는 것을 추천드립니다.
+            </div>
+        {{/data}}
+        <div class="back-link">
+            <a href="/">다시 탐색</a>
+        </div>
+    </div>
+</div>
+
+{{>layouts/footer}}

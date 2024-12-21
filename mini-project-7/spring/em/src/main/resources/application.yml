@@ -1,0 +1,29 @@
+server:
+  servlet:
+    encoding:
+      force-response: true
+
+    session:
+      tracking-modes: cookie
+      timeout: 1800
+
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:~/emdb
+    username: sa
+    password: 1234
+
+  messages:
+      basename: "messages,errors"
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+

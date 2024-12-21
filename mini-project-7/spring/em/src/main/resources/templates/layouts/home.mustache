@@ -1,0 +1,33 @@
+{{>layouts/header}}
+<div id="back_ground">
+    <form id = "data_input" class="container" action="/em/info" method="post" style="background-color: white; padding: 30px; width: 60%; border-radius: 8px; ">
+        <div class ="mb-3">
+            <label class="form-label">위도</label>
+            <input type="text" class="form-control" name="lat">
+        </div>
+        <div class ="mb-3">
+            <label class="form-label">경도</label>
+            <input type="text" class="form-control" name="lon">
+        </div>
+        <div class ="mb-3">
+            <label class="form label">상태</label>
+            <textarea class="form-control" name="status" rows="5"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <a href="/news/list">cancel</a>
+    </form>
+
+    <div id="loading" style="display:none;">
+        <div class="spinner"></div>
+    </div>
+    <script>
+        const form = document.getElementById("data_input");
+        const loading = document.getElementById("loading");
+
+        form.addEventListener("submit", function (event) {
+            loading.style.display = "flex";
+        });
+    </script>
+</div>
+
+{{>layouts/footer}}

@@ -1,0 +1,20 @@
+{{>layouts/header}}
+<div id="back_ground">
+    <form id = "data_input" class="container" action="/em/signin" method="post" style="background-color: white; padding: 30px; width: 60%; border-radius: 8px; ">
+        <div class ="mb-3">
+            <label class="form-label">이름</label>
+            <input type="text" class="form-control" name="name">
+        </div>
+        <div class ="mb-3">
+            <label class="form-label">아이디</label>
+            <input type="text" class="form-control" name="loginId">
+        </div>
+        <div class ="mb-3">
+            <label class="form-label">비밀번호</label>
+            <input type="text" class="form-control" name="password">
+        </div>
+        <button type="submit" class="btn btn-primary">회원가입</button>
+    </form>
+</div>
+
+{{>layouts/footer}}

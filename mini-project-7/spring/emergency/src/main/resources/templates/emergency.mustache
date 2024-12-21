@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<h1>Hospital Search</h1>
+<form action="/hospitals" method="get">
+    <label for="input_text">Input Text</label>
+    <input type="text" id="input_text" name="input_text" required>
+
+    <label for="latitude">Latitude</label>
+    <input type="number" step="any" id="latitude" name="latitude" required>
+
+    <label for="longitude">Longitude</label>
+    <input type="number" step="any" id="longitude" name="longitude" required>
+
+    <button type="submit">Search</button>
+</form>
+</body>
+</html>

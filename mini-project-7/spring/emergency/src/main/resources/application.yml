@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: emergency
+
+server:
+  servlet:
+    encoding:
+      force: true
