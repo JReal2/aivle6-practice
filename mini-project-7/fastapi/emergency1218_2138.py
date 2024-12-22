@@ -227,11 +227,12 @@ class RecommendHospital3:
         input_text, filter_lst, lat, lon, pred, text = self.recommend_hospital()
         
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        text_dict = json.loads(text)
         
         total_result = {
             "datetime": dt,
             "input_text": input_text,
-            "input_summary": text,
+            "input_summary": text_dict["1차 판단"],
             "input_latitude": lat,
             "input_longitude": lon,
             "em_class": pred,
@@ -257,7 +258,8 @@ class RecommendHospital3:
         
         if filter_lst is None:
             total_result = pd.DataFrame([total_result])
-            self.send_data2(total_result)
+            self.send_data(total_result)
+            print('4~5등급 DB에 성공적으로 추가하였습니다.')
             return "가까운 병원을 찾아가는 것을 추천드립니다."
 
         for i in range(len(filter_lst)):
@@ -284,22 +286,14 @@ class RecommendHospital3:
                 total_result[fee_key] = int(result['taxiFare']) + int(result['tollFare'])
         
         total_result = pd.DataFrame([total_result])        
-        self.send_data1(total_result)
+        self.send_data(total_result)
+        print('1~3등급 DB에 성공적으로 추가하였습니다.')
         
         return total_result
     
-    def send_data1(self, data): # 1 ~ 3 등급에 관한 DB에 추가
+    def send_data(self, data): # 1 ~ 3 등급에 관한 DB에 추가
         path = '../db/em.db'
         with sqlite3.connect(path) as condb:
             conn = sqlite3.connect(path)
-            data.to_sql('request1', condb, if_exists='append', index=False)
+            data.to_sql('emdata', condb, if_exists='append', index=False)
             conn.close()
-            print('1~3등급 DB에 성공적으로 추가하였습니다.')
-            
-    def send_data2(self, data): # 4 ~ 5 등급에 관한 DB에 추가
-        path = '../db/em.db'
-        with sqlite3.connect(path) as condb:
-            conn = sqlite3.connect(path)
-            data.to_sql('request2', condb, if_exists='append', index=False)
-            conn.close()
-            print('4~5등급 DB에 성공적으로 추가하였습니다.')
