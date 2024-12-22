@@ -26,7 +26,6 @@ import java.util.List;
 @RequestMapping("/em")
 public class EMController {
     private final PostService postService;
-    private final MemberService memberService;
     private final EMService emService;
 
     @GetMapping()
@@ -59,17 +58,4 @@ public class EMController {
         return "layouts/result";
     }
 
-    @GetMapping("/signin")
-    public String signIn() {
-        return "layouts/signIn";
-    }
-
-    @PostMapping("/signin")
-    public String getInfo(EMDto.MemberDTO member, Model model) {
-        log.info("name :"+member.getName());
-        log.info("id :"+member.getLoginId());
-        log.info("password :"+member.getPassword());
-        memberService.save(member);
-        return "layouts/login";
-    }
 }

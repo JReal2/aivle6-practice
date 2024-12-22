@@ -4,6 +4,8 @@ import com.example.em.domain.EMData;
 import com.example.em.domain.EMDto;
 import com.example.em.repository.EMRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,12 @@ public class EMService {
     public EMData saveEMD(EMData data) {
 
         return emRepository.save(data);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EMData> getLogList(Pageable pageable) {
+
+        return emRepository.findAll(pageable);
     }
 
     public List<EMDto.Hospital> transformData(EMDto.Info data) {

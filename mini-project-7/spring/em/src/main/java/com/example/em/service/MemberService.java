@@ -18,12 +18,12 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository repository;
 
-    public Member save(EMDto.MemberDTO member) {
+    public void save(EMDto.MemberDTO member) {
         Member saveM = new Member();
         saveM.setName(member.getName());
         saveM.setLoginId(member.getLoginId());
         saveM.setPassword(member.getPassword());
-        return repository.save(saveM);
+        repository.save(saveM);
     }
 
     public Optional<Member> findById(Long id) {
@@ -34,11 +34,16 @@ public class MemberService {
         log.info("Find member by loginId: " + loginId);
         List<Member> all = findAll();
         for (Member m : all) {
-            if (m.getLoginId().equals(loginId))
+            if (m.getLoginId().equals(loginId)) {
                 log.info("Find");
                 return Optional.of(m);
+            }
         }
         return Optional.empty();
+    }
+
+    public boolean isLoginIdExists(String loginId) {
+        return repository.findByLoginId(loginId).isPresent();
     }
 
     public List<Member> findAll() {

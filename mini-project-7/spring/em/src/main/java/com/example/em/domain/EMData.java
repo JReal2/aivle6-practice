@@ -13,6 +13,10 @@ public class EMData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String datetime;
+    private String input_text;
+    private String input_summary;
+    private double input_latitude;
+    private double input_longitude;
     private int em_class;
     private String hospital1;
     private String addr1;

@@ -1,0 +1,132 @@
+{{>layouts/header}}
+<div id="back_ground">
+    <style>
+        #back_ground {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        thead tr {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: center;
+            font-size: small;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #dddddd;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #dddddd;
+            font-size: small;
+            background-color: #f3f3f3;
+        }
+
+        tbody tr:last-of-type {
+            border-bottom: 2px solid #009879;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #ff0000;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            margin-top: 20px;
+        }
+    </style>
+
+    <table>
+        <thead>
+        <tr>
+            <td>날짜</td>
+            <td>요청 문구</td>
+            <td>위도</td>
+            <td>경도</td>
+            <td>등급</td>
+            <td>병원 1 위치</td>
+            <td>병원 1 전화번호</td>
+            <td>병원 1 소요시간</td>
+            <td>병원 1 거리</td>
+            <td>병원 1 요금</td>
+            <td>병원 2 위치</td>
+            <td>병원 2 전화번호</td>
+            <td>병원 2 소요시간</td>
+            <td>병원 2 거리</td>
+            <td>병원 2 요금</td>
+            <td>병원 3 위치</td>
+            <td>병원 3 전화번호</td>
+            <td>병원 3 소요시간</td>
+            <td>병원 3 거리</td>
+            <td>병원 3 요금</td>
+        </tr>
+        </thead>
+        <tbody>
+        {{#logs}}
+            <tr>
+                <td>{{datetime}}</td>
+                <td>{{input_text}}</td>
+                <td>{{input_latitude}}</td>
+                <td>{{input_longitude}}</td>
+                <td>{{em_class}} 등급</td>
+                <td>{{addr1}}</td>
+                <td>{{tel1}}</td>
+                <td>{{eta1}}</td>
+                <td>{{dist1}}</td>
+                <td>{{fee1}}</td>
+                <td>{{addr2}}</td>
+                <td>{{tel2}}</td>
+                <td>{{eta2}}</td>
+                <td>{{dist2}}</td>
+                <td>{{fee2}}</td>
+                <td>{{addr3}}</td>
+                <td>{{tel3}}</td>
+                <td>{{eta3}}</td>
+                <td>{{dist3}}</td>
+                <td>{{fee3}}</td>
+            </tr>
+        {{/logs}}
+        </tbody>
+    </table>
+
+    {{^logs}}
+        <div class="no-results">
+            데이터가 존재하지 않습니다.
+        </div>
+    {{/logs}}
+
+    <!-- 페이지네이션 코드 -->
+    <div class="pagination-container">
+        <ul class="pagination justify-content-center">
+            <li class="page-item {{^hasPrev}}disabled{{/hasPrev}}">
+                <a class="page-link" href="?page={{prev}}"
+                tabindex="-1" aria-disabled="true">
+                Previous
+                </a>
+            </li>
+            {{#pageNumbers}}
+                <li class="page-item {{#isCurrentPage}}active{{/isCurrentPage}}">
+                    <a class="page-link" href="?page={{number}}">{{number}}</a>
+                </li>
+            {{/pageNumbers}}
+            <li class="page-item {{^hasNext}}disabled{{/hasNext}}">
+                <a class="page-link" href="?page={{next}}"
+                tabindex="-1" aria-disabled="true">
+                Next
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+{{>layouts/footer}}

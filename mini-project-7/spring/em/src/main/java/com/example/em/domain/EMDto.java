@@ -68,5 +68,8 @@ public class EMDto {
 
         @NotEmpty
         private String password;
+
+        @NotEmpty
+        private boolean admin;
     }
 }
