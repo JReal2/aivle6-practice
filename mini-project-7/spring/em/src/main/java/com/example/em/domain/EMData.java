@@ -24,16 +24,19 @@ public class EMData {
     private String eta1;
     private double dist1;
     private int fee1;
+    private String path1;
     private String hospital2;
     private String addr2;
     private String tel2;
     private String eta2;
     private double dist2;
     private int fee2;
+    private String path2;
     private String hospital3;
     private String addr3;
     private String tel3;
     private String eta3;
     private double dist3;
     private int fee3;
+    private String path3;
 }

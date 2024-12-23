@@ -10,7 +10,7 @@ server:
 spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:../../db/em.db
+    url: jdbc:sqlite:src/main/resources/database/em.db
 
   messages:
       basename: "messages,errors"
@@ -20,3 +20,6 @@ spring:
       ddl-auto: update
     show-sql: true
 
+hospital:
+  api:
+    host: http://127.0.0.1:8000

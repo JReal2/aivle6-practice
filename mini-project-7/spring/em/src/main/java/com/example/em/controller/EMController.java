@@ -1,8 +1,10 @@
 package com.example.em.controller;
 
 import com.example.em.config.Login;
+import com.example.em.domain.EMData;
 import com.example.em.domain.EMDto;
 import com.example.em.domain.Member;
+import com.example.em.repository.EMRepository;
 import com.example.em.service.EMService;
 import com.example.em.service.MemberService;
 import com.example.em.service.PostService;
@@ -15,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 
@@ -25,6 +28,10 @@ import java.util.List;
 public class EMController {
     private final PostService postService;
     private final EMService emService;
+    private final EMRepository emRepository;
+
+    @Value("${hospital.api.host}")
+    private String hospitalApiHost;
 
     @GetMapping()
     public String home(@Login Member loginmember, Model model) {
@@ -42,9 +49,12 @@ public class EMController {
         if (loginmember == null) {
             return "layouts/login";
         }
-        String url = "http://127.0.0.1:8000/items/text"; // 대상 서버의 URL
+        String url = hospitalApiHost + "/items/text"; // 대상 서버의 URL
         String send = postService.sendPostRequest(url, info);
         Gson gson = new Gson();
+        EMData emData = gson.fromJson(send, EMData.class);
+        System.out.println(emData);
+        emRepository.save(emData);
         EMDto.Info data = gson.fromJson(send, EMDto.Info.class);
         System.out.println(data);
         List<EMDto.Hospital> hospitalList = emService.transformData(data);
