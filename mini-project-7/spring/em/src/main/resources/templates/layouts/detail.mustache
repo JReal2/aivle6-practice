@@ -1,0 +1,101 @@
+{{>layouts/header}}
+<div id="back_ground">
+    <style>
+        .hospital-card {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin: 20px auto;
+                padding: 10px;
+                width: 60%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .hospital-card h2 {
+                margin: 0;
+                font-size: 1.5em;
+                color: #4CAF50;
+            }
+            .hospital-card p {
+                margin: 8px 0;
+                color: #555;
+            }
+            .hospital-card .eta {
+                font-weight: bold;
+                color: #007BFF;
+            }
+            .hospital-card .distance {
+                color: #FF5722;
+                font-weight: bold;
+            }
+            .back-link {
+                display: block;
+                margin-top: 20px;
+                text-align: center;
+            }
+
+    </style>
+    <div class="container">
+        {{#hospitalInfo}}
+            <div class="hospital-card">
+                <h2>{{hospital}}</h2>
+                <p><strong>주소:</strong> {{addr}}</p>
+                <p><strong>전화번호:</strong> {{tel}}</p>
+                <p><span class="eta">예상 도착 시간:</span> {{eta}}</p>
+                <p><span class="distance">거리:</span> {{dist}} km</p>
+                <p><strong>예상 요금:</strong> {{fee}}원</p>
+                <p><strong>경로:</strong></p>
+                <div id="map" style="width:100%;height:400px;"></div>
+            </div>
+        {{/hospitalInfo}}
+        <button onclick="window.history.back()" class="btn btn-primary" style="color: white;display: flex;justify-content: center; width: 10%;margin-bottom: 10px">뒤로가기</button>
+    </div>
+</div>
+
+<script>
+    var path = {{#hospitalInfo.path}}
+    [{{.}}]
+    {{/hospitalInfo.path}};
+
+    var nPath = [];
+    var pathData = path[0];
+
+    var mapOptions = {
+        center: new naver.maps.LatLng(pathData[0][1], pathData[0][0]),
+        zoom: 14
+    };
+    var map = new naver.maps.Map('map', mapOptions);
+    for (var i = 0; i < pathData.length; i++) {
+        var long = pathData[i][0];
+        var lat = pathData[i][1];
+        nPath.push(new naver.maps.LatLng(lat, long))
+    }
+    var polyline = new naver.maps.Polyline({
+        map: map,
+        path: nPath,
+        strokeWeight: 8,
+        strokeColor: '#386DE8',
+        strokeLineCap : 'round',
+    });
+    var start = new naver.maps.LatLng(pathData[0][1], pathData[0][0]);
+    var end = new naver.maps.LatLng(pathData[pathData.length-1][1], pathData[pathData.length-1][0]);
+    var startMarkerOptions = {
+        position: start,
+        map: map,
+        icon: {
+            url: '/images/start.png',
+            scaledSize: new naver.maps.Size(30, 40),
+        }
+    };
+    var endMarkerOptions = {
+        position: end,
+        map: map,
+        icon: {
+            url: '/images/end.png',
+            scaledSize: new naver.maps.Size(30, 40),
+        }
+    };
+
+    var startMarker = new naver.maps.Marker(startMarkerOptions);
+    var endMarker = new naver.maps.Marker(endMarkerOptions);
+</script>
+{{>layouts/footer}}

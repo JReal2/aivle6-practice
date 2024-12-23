@@ -42,7 +42,8 @@ public class EMService {
                     data.getTel1(),
                     data.getEta1(),
                     data.getDist1(),
-                    data.getFee1()
+                    data.getFee1(),
+                    data.getPath1()
             );
             EMDto.Hospital hospital2 = new EMDto.Hospital(
                     data.getHospital2(),
@@ -50,7 +51,8 @@ public class EMService {
                     data.getTel2(),
                     data.getEta2(),
                     data.getDist2(),
-                    data.getFee2()
+                    data.getFee2(),
+                    data.getPath2()
             );
             EMDto.Hospital hospital3 = new EMDto.Hospital(
                     data.getHospital3(),
@@ -58,7 +60,8 @@ public class EMService {
                     data.getTel3(),
                     data.getEta3(),
                     data.getDist3(),
-                    data.getFee3()
+                    data.getFee3(),
+                    data.getPath3()
             );
 
             hospitals.add(hospital1);

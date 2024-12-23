@@ -14,10 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @Controller
@@ -58,4 +56,14 @@ public class EMController {
         return "layouts/result";
     }
 
+    @PostMapping("/detail")
+    public String getDetail(@Login Member loginmember, @ModelAttribute EMDto.Hospital hospital, Model model) {
+        if (loginmember == null) {
+            return "layouts/login";
+        }
+        System.out.println(hospital.getPath());
+        model.addAttribute("hospitalInfo", hospital);
+
+        return "layouts/detail";
+    }
 }
