@@ -1,4 +1,4 @@
-# Amazon Corretto 21을 기반 이미지로 사용
+# Amazon Corretto 17을 기반 이미지로 사용
 FROM amazoncorretto:17
 
 # 빌드된 JAR 파일을 컨테이너로 복사

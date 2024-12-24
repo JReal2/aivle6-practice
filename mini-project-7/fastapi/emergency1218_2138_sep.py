@@ -171,7 +171,7 @@ class RecommendHospital3:
         if response.status_code == 200:
             response_data = response.json()
             try:
-                return response_data['route']['trafast'][0]
+                return response_data['route']['trafast'][0]['summary']
             except KeyError:
                 return None
         else:
@@ -227,12 +227,11 @@ class RecommendHospital3:
         input_text, filter_lst, lat, lon, pred, text = self.recommend_hospital()
         
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        text_dict = json.loads(text)
         
         total_result = {
             "datetime": dt,
             "input_text": input_text,
-            "input_summary": text_dict["1차 판단"],
+            "input_summary": text,
             "input_latitude": lat,
             "input_longitude": lon,
             "em_class": pred,
@@ -242,27 +241,23 @@ class RecommendHospital3:
             "eta1": None,
             "dist1": None,
             "fee1": None,
-            "path1": None,
             "hospital2": None,
             "addr2": None,
             "tel2": None,
             "eta2": None,
             "dist2": None,
             "fee2": None,
-            "path2": None,
             "hospital3": None,
             "addr3": None,
             "tel3": None,
             "eta3": None,
             "dist3": None,
             "fee3": None,
-            "path3": None,
         }
         
         if filter_lst is None:
             total_result = pd.DataFrame([total_result])
-            self.send_data(total_result)
-            print('4~5등급 DB에 성공적으로 추가하였습니다.')
+            self.send_data2(total_result)
             return "가까운 병원을 찾아가는 것을 추천드립니다."
 
         for i in range(len(filter_lst)):
@@ -272,7 +267,7 @@ class RecommendHospital3:
                 hospital['위도'], hospital['경도']
             )
             if result:
-                hours, minutes = self.convert_milliseconds(result['summary']['duration'])
+                hours, minutes = self.convert_milliseconds(result['duration'])
                 
                 hospital_key = f"hospital{i+1}"
                 addr_key = f"addr{i+1}"
@@ -280,25 +275,31 @@ class RecommendHospital3:
                 eta_key = f"eta{i+1}"
                 dist_key = f"dist{i+1}"
                 fee_key = f"fee{i+1}"
-                path_key = f"path{i+1}"
 
                 total_result[hospital_key] = hospital["병원이름"]
                 total_result[addr_key] = hospital["주소"]
                 total_result[tel_key] = hospital["전화번호 1"]
                 total_result[eta_key] = (f"{hours}시간 {minutes}분")
-                total_result[dist_key] = result['summary']['distance'] / 1000
-                total_result[fee_key] = int(result['summary']['taxiFare']) + int(result['summary']['tollFare'])
-                total_result[path_key] = json.dumps(result['path'])
+                total_result[dist_key] = result['distance'] / 1000
+                total_result[fee_key] = int(result['taxiFare']) + int(result['tollFare'])
         
         total_result = pd.DataFrame([total_result])        
-        self.send_data(total_result)
-        print('1~3등급 DB에 성공적으로 추가하였습니다.')
+        self.send_data1(total_result)
         
         return total_result
     
-    def send_data(self, data): # 1 ~ 3 등급에 관한 DB에 추가
-        path = './db/em.db'
+    def send_data1(self, data): # 1 ~ 3 등급에 관한 DB에 추가
+        path = '../db/em.db'
         with sqlite3.connect(path) as condb:
             conn = sqlite3.connect(path)
-            data.to_sql('emdata', condb, if_exists='append', index=False)
+            data.to_sql('request1', condb, if_exists='append', index=False)
             conn.close()
+            print('1~3등급 DB에 성공적으로 추가하였습니다.')
+            
+    def send_data2(self, data): # 4 ~ 5 등급에 관한 DB에 추가
+        path = '../db/em.db'
+        with sqlite3.connect(path) as condb:
+            conn = sqlite3.connect(path)
+            data.to_sql('request2', condb, if_exists='append', index=False)
+            conn.close()
+            print('4~5등급 DB에 성공적으로 추가하였습니다.')

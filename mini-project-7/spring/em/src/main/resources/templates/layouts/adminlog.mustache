@@ -47,6 +47,27 @@
         }
     </style>
 
+    <form method="get" action="/admin">
+        <label for="startDate">Start Date:</label>
+        <input type="datetime-local" id="startDate" name="startDate" value="{{startDate}}">
+
+        <label for="endDate">End Date:</label>
+        <input type="datetime-local" id="endDate" name="endDate" value="{{endDate}}">
+
+        <label for="emClass">등급</label>
+        <select id="emClass" name="emClass">
+            {{#emClass}}<option value="" hidden>{{emClass}}</option>{{/emClass}}
+            <option value="" {{^emClass}}selected{{/emClass}}>-- 선택 --</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+
+        <button type="submit">Search</button>
+    </form>
+
     <table>
         <thead>
         <tr>
@@ -55,21 +76,24 @@
             <td>위도</td>
             <td>경도</td>
             <td>등급</td>
-            <td>병원 1 위치</td>
-            <td>병원 1 전화번호</td>
-            <td>병원 1 소요시간</td>
-            <td>병원 1 거리</td>
-            <td>병원 1 요금</td>
-            <td>병원 2 위치</td>
-            <td>병원 2 전화번호</td>
-            <td>병원 2 소요시간</td>
-            <td>병원 2 거리</td>
-            <td>병원 2 요금</td>
-            <td>병원 3 위치</td>
-            <td>병원 3 전화번호</td>
-            <td>병원 3 소요시간</td>
-            <td>병원 3 거리</td>
-            <td>병원 3 요금</td>
+            <td>병원1 이름</td>
+            <td>병원1 위치</td>
+            <td>병원1 전화번호</td>
+            <td>병원1 소요시간</td>
+            <td>병원1 거리</td>
+            <td>병원1 요금</td>
+            <td>병원2 이름</td>
+            <td>병원2 위치</td>
+            <td>병원2 전화번호</td>
+            <td>병원2 소요시간</td>
+            <td>병원2 거리</td>
+            <td>병원2 요금</td>
+            <td>병원3 이름</td>
+            <td>병원3 위치</td>
+            <td>병원3 전화번호</td>
+            <td>병원3 소요시간</td>
+            <td>병원3 거리</td>
+            <td>병원3 요금</td>
         </tr>
         </thead>
         <tbody>
@@ -80,21 +104,24 @@
                 <td>{{input_latitude}}</td>
                 <td>{{input_longitude}}</td>
                 <td>{{em_class}} 등급</td>
-                <td>{{addr1}}</td>
-                <td>{{tel1}}</td>
-                <td>{{eta1}}</td>
-                <td>{{dist1}}</td>
-                <td>{{fee1}}</td>
-                <td>{{addr2}}</td>
-                <td>{{tel2}}</td>
-                <td>{{eta2}}</td>
-                <td>{{dist2}}</td>
-                <td>{{fee2}}</td>
-                <td>{{addr3}}</td>
-                <td>{{tel3}}</td>
-                <td>{{eta3}}</td>
-                <td>{{dist3}}</td>
-                <td>{{fee3}}</td>
+                <td>{{#hospital1}}{{hospital1}}{{/hospital1}}{{^hospital1}}-{{/hospital1}}</td>
+                <td>{{#addr1}}{{addr1}}{{/addr1}}{{^addr1}}-{{/addr1}}</td>
+                <td>{{#tel1}}{{tel1}}{{/tel1}}{{^tel1}}-{{/tel1}}</td>
+                <td>{{#eta1}}{{eta1}}{{/eta1}}{{^eta1}}-{{/eta1}}</td>
+                <td>{{#dist1}}{{dist1}}{{/dist1}}{{^dist1}}-{{/dist1}}</td>
+                <td>{{#fee1}}{{fee1}}{{/fee1}}{{^fee1}}-{{/fee1}}</td>
+                <td>{{#hospital2}}{{hospital2}}{{/hospital2}}{{^hospital2}}-{{/hospital2}}</td>
+                <td>{{#addr2}}{{addr2}}{{/addr2}}{{^addr2}}-{{/addr2}}</td>
+                <td>{{#tel2}}{{tel2}}{{/tel2}}{{^tel2}}-{{/tel2}}</td>
+                <td>{{#eta2}}{{eta2}}{{/eta2}}{{^eta2}}-{{/eta2}}</td>
+                <td>{{#dist2}}{{dist2}}{{/dist2}}{{^dist2}}-{{/dist2}}</td>
+                <td>{{#fee2}}{{fee2}}{{/fee2}}{{^fee2}}-{{/fee2}}</td>
+                <td>{{#hospital3}}{{hospital3}}{{/hospital3}}{{^hospital3}}-{{/hospital3}}</td>
+                <td>{{#addr3}}{{addr3}}{{/addr3}}{{^addr3}}-{{/addr3}}</td>
+                <td>{{#tel3}}{{tel3}}{{/tel3}}{{^tel3}}-{{/tel3}}</td>
+                <td>{{#eta3}}{{eta3}}{{/eta3}}{{^eta3}}-{{/eta3}}</td>
+                <td>{{#dist3}}{{dist3}}{{/dist3}}{{^dist3}}-{{/dist3}}</td>
+                <td>{{#fee3}}{{fee3}}{{/fee3}}{{^fee3}}-{{/fee3}}</td>
             </tr>
         {{/logs}}
         </tbody>
@@ -110,18 +137,18 @@
     <div class="pagination-container">
         <ul class="pagination justify-content-center">
             <li class="page-item {{^hasPrev}}disabled{{/hasPrev}}">
-                <a class="page-link" href="?page={{prev}}"
+                <a class="page-link" href="?page={{prev}}&startDate={{startDate}}&endDate={{endDate}}{{#emClass}}&emClass={{emClass}}{{/emClass}}"
                 tabindex="-1" aria-disabled="true">
                 Previous
                 </a>
             </li>
             {{#pageNumbers}}
                 <li class="page-item {{#isCurrentPage}}active{{/isCurrentPage}}">
-                    <a class="page-link" href="?page={{number}}">{{number}}</a>
+                    <a class="page-link" href="?page={{number}}&startDate={{startDate}}&endDate={{endDate}}{{#emClass}}&emClass={{emClass}}{{/emClass}}">{{number}}</a>
                 </li>
             {{/pageNumbers}}
             <li class="page-item {{^hasNext}}disabled{{/hasNext}}">
-                <a class="page-link" href="?page={{next}}"
+                <a class="page-link" href="?page={{next}}&startDate={{startDate}}&endDate={{endDate}}{{#emClass}}&emClass={{emClass}}{{/emClass}}"
                 tabindex="-1" aria-disabled="true">
                 Next
                 </a>

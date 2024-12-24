@@ -1,6 +1,6 @@
 from typing import Union
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pydantic import BaseModel
 import pandas as pd
 import sqlite3
@@ -12,6 +12,8 @@ path = './'
 import os
 import json
 import requests
+from typing import Optional
+from datetime import datetime
 import xml.etree.ElementTree as ET
 import pandas as pd
 import sys
@@ -44,18 +46,48 @@ class Log (BaseModel):
     eta1: str
     dist1: float
     fee1: int
+    path1: str
     hospital2: str
     addr2: str
     tel2: str
     eta2: str
     dist2: float
     fee2: int
+    path2: str
     hospital3: str
     addr3: str
     tel3: str
     eta3: str
     dist3: float
     fee3: int
+    path3: str
+    
+class AdminLog (BaseModel):
+    datetime: str
+    input_text: str
+    input_summary: str
+    input_latitude: float
+    input_longitude: float
+    em_class: int
+    hospital1: Optional[str] = ""
+    addr1: Optional[str] = ""
+    tel1: Optional[str] = ""
+    eta1: Optional[str] = ""
+    dist1: Optional[float] = 0
+    fee1: Optional[float] = 0
+    hospital2: Optional[str] = ""
+    addr2: Optional[str] = ""
+    tel2: Optional[str] = ""
+    eta2: Optional[str] = ""
+    dist2: Optional[float] = 0
+    fee2: Optional[float] = 0
+    hospital3: Optional[str] = ""
+    addr3: Optional[str] = ""
+    tel3: Optional[str] = ""
+    eta3: Optional[str] = ""
+    dist3: Optional[float] = 0
+    fee3: Optional[float] = 0
+
 
     
 class Emergency(BaseModel):
@@ -169,6 +201,60 @@ def update_item_text(emer: Emergency):
             "eta1": log_instance.eta1,
             "dist1": log_instance.dist1,
             "fee1": log_instance.fee1,
+            "path1": log_instance.path1,
+            "hospital2": log_instance.hospital2,
+            "addr2": log_instance.addr2,
+            "tel2": log_instance.tel2,
+            "eta2": log_instance.eta2,
+            "dist2": log_instance.dist2,
+            "fee2": log_instance.fee2,
+            "path2": log_instance.path2,
+            "hospital3": log_instance.hospital3,
+            "addr3": log_instance.addr3,
+            "tel3": log_instance.tel3,
+            "eta3": log_instance.eta3,
+            "dist3": log_instance.dist3,
+            "fee3": log_instance.fee3,
+            "path3": log_instance.path3
+            }
+    
+@app.get('/items')
+def getLogList(
+    startDate: Optional[str] = Query(None), 
+    endDate: Optional[str] = Query(None),
+    emClass: Optional[int] = Query(None)
+    ):
+    conn = sqlite3.connect('./db/em.db')
+
+    query = """
+        SELECT datetime, input_text, input_summary, input_latitude, input_longitude, 
+            em_class, hospital1, addr1, tel1, eta1, dist1, fee1, 
+            hospital2, addr2, tel2, eta2, dist2, fee2, 
+            hospital3, addr3, tel3, eta3, dist3, fee3 
+        FROM emdata
+    """
+    df = pd.read_sql(query, conn)
+    
+    conn.close()
+    
+    result = []
+    for _, row in df.iterrows():
+        row_dict = row.to_dict()
+        row_dict = {k: (None if pd.isna(v) else v) for k, v in row_dict.items()}
+        
+        log_instance = AdminLog(**row_dict)
+        result.append({ "datetime": log_instance.datetime,
+            "input_text": log_instance.input_text,
+            "input_summary": log_instance.input_summary,
+            "input_latitude": log_instance.input_latitude,
+            "input_longitude": log_instance.input_longitude,
+            "em_class": log_instance.em_class,
+            "hospital1": log_instance.hospital1,
+            "addr1": log_instance.addr1,
+            "tel1": log_instance.tel1,
+            "eta1": log_instance.eta1,
+            "dist1": log_instance.dist1,
+            "fee1": log_instance.fee1,
             "hospital2": log_instance.hospital2,
             "addr2": log_instance.addr2,
             "tel2": log_instance.tel2,
@@ -181,6 +267,20 @@ def update_item_text(emer: Emergency):
             "eta3": log_instance.eta3,
             "dist3": log_instance.dist3,
             "fee3": log_instance.fee3
-            }
-            
-            
+            })
+        
+        if startDate and endDate:
+            start_date = datetime.strptime(startDate, "%Y-%m-%dT%H:%M:%S")
+            end_date = datetime.strptime(endDate, "%Y-%m-%dT%H:%M:%S")
+            result = [
+                log for log in result 
+                if start_date <= datetime.strptime(log["datetime"], "%Y-%m-%d %H:%M:%S") <= end_date
+            ]
+
+        if emClass in range(1,6):
+            result = [
+                log for log in result
+                if log["em_class"] == emClass
+            ]
+        
+    return result
