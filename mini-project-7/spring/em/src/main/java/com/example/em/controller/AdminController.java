@@ -1,10 +1,13 @@
 package com.example.em.controller;
 
+import com.example.em.config.Login;
 import com.example.em.domain.EMDto;
+import com.example.em.domain.Member;
 import com.example.em.service.EMService;
 import com.google.gson.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,10 +24,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -35,13 +35,22 @@ public class AdminController {
     private final EMService emService;
     private final RestTemplate restTemplate;
 
+    @Value("${hospital.api.host}")
+    private String hospitalApiHost;
+
     @GetMapping("/admin")
-    public String adminPage(Model model, @RequestParam(name="page", defaultValue = "1") int page,
+    public String adminPage(@Login Member loginmember, Model model, @RequestParam(name="page", defaultValue = "1") int page,
                             @RequestParam(name = "startDate", required = false) String startDateStr,
                             @RequestParam(name = "endDate", required = false) String endDateStr,
                             @RequestParam(name = "emClass", required = false) Integer emClass) {
         Pageable pageable = PageRequest.of(page - 1, 5);
         log.info("Accessing admin page");
+
+        if(loginmember == null || !loginmember.isAdmin()) {
+            model.addAttribute("message", "관리자가 아닙니다.");
+            model.addAttribute("url", "/");
+            return "alert/alert";
+        }
 
         LocalDateTime startDate = null;
         LocalDateTime endDate = null;
@@ -55,7 +64,7 @@ public class AdminController {
             endDate = LocalDateTime.parse(endDateStr+":00", requestFormatter);
         }
 
-        String url = "http://127.0.0.1:8000/items";
+        String url = hospitalApiHost + "/items";
         if (startDate != null && endDate != null && emClass != null) {
             url += "?startDate=" + startDate.format(requestFormatter) +
                     "&endDate=" + endDate.format(requestFormatter) +
@@ -68,6 +77,8 @@ public class AdminController {
         if (startDate == null && endDate == null && emClass != null) {
             url += "?emClass=" + emClass;
         }
+
+        System.out.println(url);
 
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
@@ -83,12 +94,13 @@ public class AdminController {
 
         EMDto.Log[] emLogsArray = gson.fromJson(response.getBody(), EMDto.Log[].class);
         List<EMDto.Log> emLogsList = Arrays.asList(emLogsArray);
+        List<EMDto.HospitalLog> hospitalLogs = emService.transformLog(emLogsList);
 
         int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), emLogsList.size());
-        List<EMDto.Log> pageContent = emLogsList.subList(start, end);
+        int end = Math.min((start + pageable.getPageSize()), hospitalLogs.size());
+        List<EMDto.HospitalLog> pageContent = hospitalLogs.subList(start, end);
 
-        Page<EMDto.Log> logs = new PageImpl<>(pageContent, pageable, emLogsList.size());
+        Page<EMDto.HospitalLog> logs = new PageImpl<>(pageContent, pageable, hospitalLogs.size());
 
         model.addAttribute("logs", logs);
         model.addAttribute("prev", pageable.previousOrFirst().getPageNumber() + 1);

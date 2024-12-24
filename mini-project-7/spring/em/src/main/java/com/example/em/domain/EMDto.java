@@ -106,4 +106,17 @@ public class EMDto {
         private int fee3;
     }
 
+    @Data
+    public static class HospitalLog {
+        private LocalDateTime datetime;
+        private String input_text;
+        private String input_summary;
+        private double input_latitude;
+        private double input_longitude;
+        private int em_class;
+        private EMDto.Hospital hospital1;
+        private EMDto.Hospital hospital2;
+        private EMDto.Hospital hospital3;
+    }
+
 }
