@@ -3,8 +3,10 @@ package com.example.em.controller;
 import com.example.em.config.Login;
 import com.example.em.domain.EMDto;
 import com.example.em.domain.Member;
+import com.example.em.service.AdminService;
 import com.example.em.service.EMService;
-import com.google.gson.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,10 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +32,7 @@ import java.util.stream.IntStream;
 public class AdminController {
     private final EMService emService;
     private final RestTemplate restTemplate;
+    private final AdminService adminService;
 
     @Value("${hospital.api.host}")
     private String hospitalApiHost;
@@ -43,7 +42,6 @@ public class AdminController {
                             @RequestParam(name = "startDate", required = false) String startDateStr,
                             @RequestParam(name = "endDate", required = false) String endDateStr,
                             @RequestParam(name = "emClass", required = false) Integer emClass) {
-        Pageable pageable = PageRequest.of(page - 1, 5);
         log.info("Accessing admin page");
 
         if(loginmember == null || !loginmember.isAdmin()) {
@@ -78,23 +76,9 @@ public class AdminController {
             url += "?emClass=" + emClass;
         }
 
-        System.out.println(url);
+        List<EMDto.HospitalLog> hospitalLogs = adminService.getLogs(url);
 
-        HttpHeaders headers = new HttpHeaders();
-        HttpEntity<Object> requestEntity = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
-
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, (JsonDeserializer<LocalDateTime>) (json, typeOfT, context) -> {
-                    String datetimeString = json.getAsString();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    return LocalDateTime.parse(datetimeString, formatter);
-                })
-                .create();
-
-        EMDto.Log[] emLogsArray = gson.fromJson(response.getBody(), EMDto.Log[].class);
-        List<EMDto.Log> emLogsList = Arrays.asList(emLogsArray);
-        List<EMDto.HospitalLog> hospitalLogs = emService.transformLog(emLogsList);
+        Pageable pageable = PageRequest.of(page - 1, 5);
 
         int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), hospitalLogs.size());
@@ -128,4 +112,64 @@ public class AdminController {
         return "layouts/adminlog";
     }
 
+    @GetMapping("/admin/chart-data")
+    public String adminChart(@Login Member loginmember, Model model,
+                             @RequestParam(name = "startDate", required = false) String startDateStr,
+                             @RequestParam(name = "endDate", required = false) String endDateStr,
+                             @RequestParam(name = "emClass", required = false) Integer emClass) {
+
+        log.info("Accessing admin chart page");
+
+        if(loginmember == null || !loginmember.isAdmin()) {
+            model.addAttribute("message", "관리자가 아닙니다.");
+            model.addAttribute("url", "/");
+            return "alert/alert";
+        }
+
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = null;
+
+        DateTimeFormatter requestFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+        if (startDateStr != null && !startDateStr.isEmpty()) {
+            startDate = LocalDateTime.parse(startDateStr+":00", requestFormatter);
+        }
+        if (endDateStr != null && !endDateStr.isEmpty()) {
+            endDate = LocalDateTime.parse(endDateStr+":00", requestFormatter);
+        }
+
+        String url = hospitalApiHost + "/items";
+        if (startDate != null && endDate != null && emClass != null) {
+            url += "?startDate=" + startDate.format(requestFormatter) +
+                    "&endDate=" + endDate.format(requestFormatter) +
+                    "&emClass=" + emClass;
+        }
+        if (startDate != null && endDate != null && emClass == null) {
+            url += "?startDate=" + startDate.format(requestFormatter) +
+                    "&endDate=" + endDate.format(requestFormatter);
+        }
+        if (startDate == null && endDate == null && emClass != null) {
+            url += "?emClass=" + emClass;
+        }
+
+        List<EMDto.HospitalLog> hospitalLogs = adminService.getLogs(url);
+        List<EMDto.LogChart> logs = adminService.getChartLogs(hospitalLogs);
+
+        // JSON으로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        try {
+            String logsJson = objectMapper.writeValueAsString(logs);
+            model.addAttribute("logs", logsJson);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("logs", "[]");
+        }
+
+        model.addAttribute("startDate", startDateStr == null ? "" : startDateStr);
+        model.addAttribute("endDate", endDateStr == null ? "" : endDateStr);
+        model.addAttribute("emClass", emClass);
+
+        return "layouts/adminchart";
+    }
 }

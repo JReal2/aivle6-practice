@@ -1,0 +1,256 @@
+{{>layouts/header}}
+<div id="back_ground">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #chartPage {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .chart {
+            display: inline-block;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+            width: 45%;
+            text-align: center;
+        }
+
+        .chart h3 {
+            font-size: 24px;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        /* 날짜별 요청 빈도 차트 */
+        #frequencyChart {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* 등급별 요청 비율 차트 */
+        #classChart {
+            width: 100%;
+            height: 400px;
+        }
+
+        /* 반응형 차트 크기 조정 */
+        @media (max-width: 768px) {
+            .chart {
+                width: 80%;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+        #searchForm {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+          }
+
+          .form-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+          }
+
+          #searchForm label {
+            font-weight: bold;
+            color: #333333;
+            margin-top:8px;
+          }
+
+          #searchForm input[type="datetime-local"],
+          #searchForm select {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            flex: 1;
+          }
+
+          #searchForm select {
+            appearance: none;
+            background: #fff url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23333" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>') no-repeat right 10px center;
+            background-size: 12px;
+          }
+
+          .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+          }
+
+          #searchForm button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #ffffff;
+          }
+
+          #searchForm button[type="button"] {
+            background-color: #f44336;
+          }
+
+          #searchForm button[type="submit"] {
+            background-color: #4CAF50;
+          }
+
+          #searchForm button:hover {
+            opacity: 0.9;
+          }
+    </style>
+    <div id="chartPage">
+        <form method="get" action="/admin/chart-data" id="searchForm">
+            <label for="startDate">Start Date:</label>
+            <input type="datetime-local" id="startDate" name="startDate" value="{{startDate}}">
+
+            <label for="endDate">End Date:</label>
+            <input type="datetime-local" id="endDate" name="endDate" value="{{endDate}}">
+
+            <label for="emClass">등급</label>
+            <select id="emClass" name="emClass">
+                {{#emClass}}<option value="" hidden>{{emClass}}</option>{{/emClass}}
+                <option value="" {{^emClass}}selected{{/emClass}}>-- 선택 --</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+
+            <button type="button" onclick="resetForm()">Reset</button>
+            <button type="submit">Search</button>
+        </form>
+        <div id="charts">
+            <div class="chart">
+                <h3>날짜별 요청 빈도</h3>
+                <canvas id="frequencyChart"></canvas>
+            </div>
+            <div class="chart">
+                <h3>등급별 요청 비율</h3>
+                <canvas id="classChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 전달된 logs 데이터
+        const logs = {{& logs }};
+
+        // 날짜별 빈도수 데이터 처리
+        const dateFrequency = {};
+        logs.forEach(log => {
+            console.log(log.datetime, typeof log.datetime);
+            const dateObj = new Date(...log.datetime);
+            const date = dateObj.toISOString().split('T')[0];
+            dateFrequency[date] = (dateFrequency[date] || 0) + 1;
+        });
+
+        const dateLabels = Object.keys(dateFrequency);
+        const dateCounts = Object.values(dateFrequency);
+
+        // em_class 빈도수 데이터 처리
+        const emClassFrequency = {};
+        logs.forEach(log => {
+            const emClass = log.em_class;
+            emClassFrequency[emClass] = (emClassFrequency[emClass] || 0) + 1;
+        });
+
+        const emClassLabels = Object.keys(emClassFrequency);
+        const emClassCounts = Object.values(emClassFrequency);
+
+        // 날짜별 빈도수 그래프
+        const dateFrequencyCtx = document.getElementById('frequencyChart').getContext('2d');
+        new Chart(dateFrequencyCtx, {
+            type: 'bar',
+            data: {
+                labels: dateLabels,
+                datasets: [{
+                    label: 'Date Frequency',
+                    data: dateCounts,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Frequency'
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: '#ddd'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // em_class 빈도수 원형 차트
+        const emClassPieCtx = document.getElementById('classChart').getContext('2d');
+        new Chart(emClassPieCtx, {
+            type: 'pie',
+            data: {
+                labels: emClassLabels,
+                datasets: [{
+                    data: emClassCounts,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    </script>
+</div>
