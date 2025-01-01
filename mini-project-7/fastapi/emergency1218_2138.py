@@ -10,6 +10,8 @@ import xml.etree.ElementTree as ET
 import openai
 from openai import OpenAI
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from sentence_transformers import SentenceTransformer, util
+
 import torch
 from geopy.distance import geodesic
 from geopy import Point
@@ -31,8 +33,9 @@ class RecommendHospital3:
         # filename 초기화
         if filename:
             self.filename = filename
-            self.audio_path = path + 'self_audio/'  # filename 기반 초기화에 사용
-        # transcript, latitude, longitude 초기화
+            self.audio_path = path + 'self_audio/'  
+            self.lat = latitude
+            self.lon = longitude
         elif transcript is not None and latitude is not None and longitude is not None:
             self.text = transcript
             self.lat = latitude
@@ -49,9 +52,8 @@ class RecommendHospital3:
 
     # 1 audio2text2summary--------------------
     def audio_to_text(self):
-      location = pd.read_excel(self.path + 'audio_location.xlsx')
-      latitude = location['위도'].loc[location['filename'] == self.filename].iloc[0]
-      longitude = location['경도'].loc[location['filename'] == self.filename].iloc[0]
+      latitude = self.lat
+      longitude = self.lon
 
       # OpenAI 클라이언트 생성
       client = OpenAI()
@@ -67,7 +69,7 @@ class RecommendHospital3:
       return transcript, latitude, longitude
 
     def text_summary(self):
-        if not hasattr(self, "text") or not hasattr(self, "lat") or not hasattr(self, "lon"):
+        if not hasattr(self, "text"):
             # audio_to_text 호출을 통해 값을 초기화
             transcript, latitude, longitude = self.audio_to_text()
         else:
@@ -120,6 +122,50 @@ class RecommendHospital3:
     # 2. model prediction------------------
     def classify_situation(self):
       transcript, text, latitude, longitude = self.text_summary()
+      
+      # =====
+      # RAG
+      emb_directory = self.path + 'RAG_model/'
+      
+      embedder = SentenceTransformer(emb_directory)
+      corpus = []
+      
+      RAG_docs_path = self.path + "RAG_docs.txt"
+      with open(RAG_docs_path, "r", encoding="utf-8") as file:
+          for line in file:
+            line = line.strip()  # 양쪽 공백 제거
+            if line:  # 빈 줄은 제외
+                corpus.append(line)
+      # 임베딩 캐싱 경로 설정
+      cache_path = './corpus_embeddings_cache.pt'
+
+      # 캐싱 확인 및 로드
+      if not os.path.exists(cache_path):
+          corpus_embeddings = embedder.encode(corpus, convert_to_tensor=True, batch_size=32)
+          torch.save(corpus_embeddings, cache_path)
+          print("임베딩 캐싱 완료.")
+      else:
+          corpus_embeddings = torch.load(cache_path)
+          print("임베딩 캐시 로드 완료.")
+      
+
+            
+      top_k = 5
+      query_embedding = embedder.encode(text, convert_to_tensor=True)
+      cos_scores = util.pytorch_cos_sim(query_embedding, corpus_embeddings)[0]
+      cos_scores = cos_scores.cpu()
+    
+      #We use np.argpartition, to only partially sort the top_k results
+      top_results = np.argpartition(-cos_scores, range(top_k))[0:top_k]
+      response = f"""Query: {text}\n
+      Corpus[1] : {corpus[top_results[0]]}\n
+      Corpus[2] : {corpus[top_results[1]]}\n
+      Corpus[3] : {corpus[top_results[2]]}\n
+      Corpus[4] : {corpus[top_results[3]]}\n
+      Corpus[5] : {corpus[top_results[4]]}\n
+      """
+      print(response)
+      # =====
 
       save_directory = self.path + 'fine_tuned_bert_v2/'
 
@@ -132,7 +178,7 @@ class RecommendHospital3:
       device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
       # 입력 문장 토크나이징
-      inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
+      inputs = tokenizer(response, return_tensors="pt", truncation=True, padding=True)
       inputs = {key: value.to(device) for key, value in inputs.items()}  # 각 텐서를 GPU로 이동
 
       # 모델 예측
@@ -171,7 +217,7 @@ class RecommendHospital3:
         if response.status_code == 200:
             response_data = response.json()
             try:
-                return response_data['route']['trafast'][0]
+                return response_data['route']['trafast'][0]['summary'],response_data['route']['trafast'][0]['path']
             except KeyError:
                 return None
         else:
@@ -227,12 +273,11 @@ class RecommendHospital3:
         input_text, filter_lst, lat, lon, pred, text = self.recommend_hospital()
         
         dt = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        text_dict = json.loads(text)
         
         total_result = {
             "datetime": dt,
             "input_text": input_text,
-            "input_summary": text_dict["1차 판단"],
+            "input_summary": text,
             "input_latitude": lat,
             "input_longitude": lon,
             "em_class": pred,
@@ -242,37 +287,36 @@ class RecommendHospital3:
             "eta1": None,
             "dist1": None,
             "fee1": None,
-            "path1": None,
+            "path1":None,
             "hospital2": None,
             "addr2": None,
             "tel2": None,
             "eta2": None,
             "dist2": None,
             "fee2": None,
-            "path2": None,
+            "path2":None,
             "hospital3": None,
             "addr3": None,
             "tel3": None,
             "eta3": None,
             "dist3": None,
             "fee3": None,
-            "path3": None,
+            "path3":None,
         }
         
         if filter_lst is None:
             total_result = pd.DataFrame([total_result])
-            self.send_data(total_result)
-            print('4~5등급 DB에 성공적으로 추가하였습니다.')
+            self.send_data2(total_result)
             return "가까운 병원을 찾아가는 것을 추천드립니다."
 
         for i in range(len(filter_lst)):
             hospital = filter_lst.iloc[i]
-            result = self.get_dist(
+            result, em_path = self.get_dist(
                 lat, lon,
                 hospital['위도'], hospital['경도']
             )
             if result:
-                hours, minutes = self.convert_milliseconds(result['summary']['duration'])
+                hours, minutes = self.convert_milliseconds(result['duration'])
                 
                 hospital_key = f"hospital{i+1}"
                 addr_key = f"addr{i+1}"
@@ -286,19 +330,27 @@ class RecommendHospital3:
                 total_result[addr_key] = hospital["주소"]
                 total_result[tel_key] = hospital["전화번호 1"]
                 total_result[eta_key] = (f"{hours}시간 {minutes}분")
-                total_result[dist_key] = result['summary']['distance'] / 1000
-                total_result[fee_key] = int(result['summary']['taxiFare']) + int(result['summary']['tollFare'])
-                total_result[path_key] = json.dumps(result['path'])
+                total_result[dist_key] = result['distance'] / 1000
+                total_result[fee_key] = int(result['taxiFare']) + int(result['tollFare'])
+                total_result[path_key] = str(em_path)
         
         total_result = pd.DataFrame([total_result])        
-        self.send_data(total_result)
-        print('1~3등급 DB에 성공적으로 추가하였습니다.')
+        self.send_data1(total_result)
         
         return total_result
     
-    def send_data(self, data): # 1 ~ 3 등급에 관한 DB에 추가
+    def send_data1(self, data): # 1 ~ 3 등급에 관한 DB에 추가
         path = './db/em.db'
         with sqlite3.connect(path) as condb:
             conn = sqlite3.connect(path)
-            data.to_sql('emdata', condb, if_exists='append', index=False)
+            data.to_sql('request1', condb, if_exists='append', index=False)
             conn.close()
+            print('1~3등급 DB에 성공적으로 추가하였습니다.')
+            
+    def send_data2(self, data): # 4 ~ 5 등급에 관한 DB에 추가
+        path = './db/em.db'
+        with sqlite3.connect(path) as condb:
+            conn = sqlite3.connect(path)
+            data.to_sql('request2', condb, if_exists='append', index=False)
+            conn.close()
+            print('4~5등급 DB에 성공적으로 추가하였습니다.')
