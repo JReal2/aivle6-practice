@@ -25,7 +25,7 @@ sys.path.append(path)
 # 더 필요한 라이브러리 추가 -------------
 import emergency1218_2138 as em
 
-naver_id, naver_key='basrjpnowz','IXJeSwizs1aDacp561uU7kQ7cE6xY0WBwkfiwrLT'
+naver_id, naver_key= ""
 
 app = FastAPI()
 
