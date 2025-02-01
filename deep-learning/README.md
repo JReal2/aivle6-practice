@@ -2,3 +2,4 @@
 
 - Functional API
 - Sequential API
+- CNN, RNN
