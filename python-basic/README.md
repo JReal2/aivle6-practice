@@ -6,3 +6,7 @@ https://chestnut-marsupial-7ae.notion.site/Day-3-Python-ad77ce7c917f472b9e666311
 
 ### Day 4
 https://chestnut-marsupial-7ae.notion.site/Day-4-Python-cec9b66eca724316b4f4711fdcf332f5?pvs=4
+
+- Jupyter Notebook 사용법
+- Numpy
+- Pandas
