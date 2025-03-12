@@ -2,4 +2,6 @@
 
 - Functional API
 - Sequential API
+- Regression
+- Classification
 - CNN, RNN
