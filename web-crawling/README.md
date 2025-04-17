@@ -2,3 +2,5 @@
 - css selector
 - api 요청
 - selenium
+- scrapy
+- iterator
