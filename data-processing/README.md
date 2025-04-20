@@ -10,4 +10,4 @@ https://chestnut-marsupial-7ae.notion.site/Day-6-3502d065e0974e7393b822dc1907247
 
 - Dataframe 전처리
 - 시계열 데이터
-- 다변량 분석
+- 단변량 분석
