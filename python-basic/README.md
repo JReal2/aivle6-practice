@@ -10,3 +10,5 @@ https://chestnut-marsupial-7ae.notion.site/Day-4-Python-cec9b66eca724316b4f4711f
 - Jupyter Notebook 사용법
 - Numpy
 - Pandas
+
+### 복습 진행 Day 1
