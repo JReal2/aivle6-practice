@@ -4,7 +4,7 @@
 - Data Analysis
 - Machine Learning
 - Deep Learning
-- Spring
+- Spring Boot
 - SQL
 - Docker
 - Azure Cloud
