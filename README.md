@@ -4,6 +4,7 @@
 - Data Analysis
 - Machine Learning
 - Deep Learning
+- Web Crawling
 - Spring Boot
 - SQL
 - Docker
