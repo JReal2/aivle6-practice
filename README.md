@@ -9,3 +9,4 @@
 - SQL
 - Docker
 - Azure Cloud
+- 7 Mini Projects
