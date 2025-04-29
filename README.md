@@ -1,4 +1,4 @@
-# AIVLE School 6기 학습 내용 정리
+9# AIVLE School 6기 학습 내용 정리
 - Python
 - Data Preprocessing
 - Data Analysis
@@ -10,3 +10,4 @@
 - Docker
 - Azure Cloud
 - 7 Mini Projects
+- Final Big Project
